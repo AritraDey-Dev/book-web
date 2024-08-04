@@ -1,13 +1,8 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { BiSearch } from "react-icons/bi";
-import {
-  AiOutlineUser,
-  AiOutlineShoppingCart,
-  AiOutlineClose,
-} from "react-icons/ai";
+import { AiOutlineUser, AiOutlineShoppingCart, AiOutlineClose } from "react-icons/ai";
 import { FaRegHeart } from "react-icons/fa";
 import { HiMenuAlt2 } from "react-icons/hi";
 import { IoMailUnreadOutline } from "react-icons/io5";
@@ -17,11 +12,16 @@ import { FiFacebook } from "react-icons/fi";
 import { CgLogIn } from "react-icons/cg";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WIshlistContext";
+import { useSession } from "next-auth/react";
+import axios from "axios";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [profile, setProfile] = useState(null);
   const { cartItems } = useCart();
   const { WishlistItems } = useWishlist();
+  const { data: session } = useSession();
+
   const openModal = () => {
     setIsOpen(true);
   };
@@ -43,6 +43,7 @@ export default function Navbar() {
       window.removeEventListener("scroll", toggleShadow);
     };
   }, []);
+
   useEffect(() => {
     const navbarr = document.querySelector(".small-navbar");
     const toggleShadow = () => {
@@ -56,6 +57,22 @@ export default function Navbar() {
       window.removeEventListener("scroll", toggleShadow);
     };
   }, []);
+
+  useEffect(() => {
+    if (session) {
+      fetchUserProfile();
+    }
+  }, [session]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await axios.get(`/api/users/${session.user.id}`);
+      setProfile(response.data);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
+
   return (
     <div className="sticky top-0 z-20 ">
       <div className="sticky top-0 z-20 md:justify-between lg:justify-around navbar px-8 py-6 bg-primary nav-main hidden md:flex ">
@@ -92,6 +109,27 @@ export default function Navbar() {
             <AiOutlineShoppingCart className="mt-1  icon-top mr-3" />
             Cart
           </Link>
+          {session ? (
+            <Link
+              href={`/profile/${session.user.id}`}
+              className="hover:opacity-95 opacity-70 flex flex-row link link-underline link-underline-black"
+            >
+              <img
+                src={profile?.image || "/default-avatar.png"}
+                alt="Profile Picture"
+                className="w-8 h-8 rounded-full mr-3"
+              />
+              <span>{profile?.name || "Profile"}</span>
+            </Link>
+          ) : (
+            <Link
+              href="/Login"
+              className="hover:opacity-95 opacity-70 flex flex-row link link-underline link-underline-black"
+            >
+              <CgLogIn className="mt-1 icon-top mr-3" />
+              Login
+            </Link>
+          )}
           <Link
             href="/Dashboard"
             className="hover:opacity-95 opacity-70 flex flex-row link link-underline link-underline-black"
@@ -100,11 +138,17 @@ export default function Navbar() {
             Dashboard
           </Link>
           <Link
-            href="/Login"
+            href="/add-book"
             className="hover:opacity-95 opacity-70 flex flex-row link link-underline link-underline-black"
           >
-            <CgLogIn className="mt-1 icon-top mr-3" />
-            Login
+            <AiOutlineUser className="mt-1 icon-top mr-3" />
+            Add Book
+          </Link>
+          <Link
+            href="/your-books"
+            className="hover:opacity-95 opacity-70 flex flex-row link link-underline link-underline-black"
+          >
+            Your Books
           </Link>
         </div>
       </div>
@@ -128,8 +172,7 @@ export default function Navbar() {
             {" "}
             <BiSearch className="icon-top" />
           </Link>
-          <Link href="/Cart" className="relative"
-           onClick={closeModal}>
+          <Link href="/Cart" className="relative" onClick={closeModal}>
             <span
               className={`${
                 cartItems.length > 0 ? "block" : "hidden"
@@ -139,8 +182,7 @@ export default function Navbar() {
             </span>{" "}
             <AiOutlineShoppingCart className="icon-top" />
           </Link>
-          <Link href="/Login"
-           onClick={closeModal}>
+          <Link href="/Login" onClick={closeModal}>
             {" "}
             <CgLogIn className="icon-top" />
           </Link>
@@ -216,18 +258,68 @@ export default function Navbar() {
                     onClick={closeModal}
                     className="flex items-center  gap-x-2 py-1 px-2 text-xl"
                   >
-                    <span>Whishlist</span>
-                    {" "}<div className="relative">
-                    <span
-                      className={`${
-                        WishlistItems.length > 0 ? "block" : "hidden"
-                      } absolute -top-1 -right-4 bg-red-600 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center`}
-                    >
-                       {WishlistItems.length}
-                    </span>
-                    <FaRegHeart className=" opacity-80 " />
+                    <span>Wishlist</span>
+                    {" "}
+                    <div className="relative">
+                      <span
+                        className={`${
+                          WishlistItems.length > 0 ? "block" : "hidden"
+                        } absolute -top-1 -right-4 bg-red-600 text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center`}
+                      >
+                        {WishlistItems.length}
+                      </span>
+                      <FaRegHeart className=" opacity-80 " />
                     </div>
-                   
+                  </Link>
+                </li>
+                <li className="flex w-full flex-col">
+                  <Link
+                    href="/add-book"
+                    onClick={closeModal}
+                    className="flex items-center gap-x-2 py-1 px-2 text-xl"
+                  >
+                    {" "}
+                    <span>Add Book</span>
+                    <AiOutlineUser className="opacity-90" />
+                  </Link>
+                </li>
+                {session ? (
+                  <li className="flex w-full flex-col">
+                    <Link
+                      href={`/profile/${session.user.id}`}
+                      onClick={closeModal}
+                      className="flex items-center gap-x-2 py-1 px-2 text-xl"
+                    >
+                      {" "}
+                      <span>Profile</span>
+                      <img
+                        src={profile?.image || "/default-avatar.png"}
+                        alt="Profile Picture"
+                        className="w-8 h-8 rounded-full ml-3"
+                      />
+                    </Link>
+                  </li>
+                ) : (
+                  <li className="flex w-full flex-col">
+                    <Link
+                      href="/Login"
+                      onClick={closeModal}
+                      className="flex items-center gap-x-2 py-1 px-2 text-xl"
+                    >
+                      {" "}
+                      <span>Login</span>
+                      <CgLogIn className="opacity-90" />
+                    </Link>
+                  </li>
+                )}
+                <li className="flex w-full flex-col">
+                  <Link
+                    href="/your-books"
+                    onClick={closeModal}
+                    className="flex items-center gap-x-2 py-1 px-2 text-xl"
+                  >
+                    {" "}
+                    <span>Your Books</span>
                   </Link>
                 </li>
                 <li className="flex w-full flex-col">
@@ -247,7 +339,7 @@ export default function Navbar() {
                     className="flex items-center gap-x-2 py-1 px-2 text-xl"
                   >
                     {" "}
-                    <span>Contact US</span>
+                    <span>Contact Us</span>
                   </Link>
                 </li>
               </ul>
@@ -277,3 +369,5 @@ export default function Navbar() {
     </div>
   );
 }
+
+

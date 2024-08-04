@@ -1,78 +1,126 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { signOut } from "next-auth/react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import cookie2 from "js-cookie";
 import Cookies from "js-cookie";
 import Link from "next/link";
 import { IoIosArrowForward } from "react-icons/io";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
+import axios from "axios";
 
 export default function UserInfo() {
   const { data: session } = useSession();
   const router = useRouter();
   const [payments, setPayments] = useState([]);
-
-  const token = Cookies.get("token");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [userId, setUserId] = useState("");
 
   useEffect(() => {
+    if (session?.user?.email) {
+      setEmail(session.user.email);
+    }
+
     const fetchPayments = async () => {
       try {
-        const response = await fetch("/api/paymentverify", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await response.json();
+        const response = await axios.get("/api/paymentverify");
+        const data = response.data;
         if (data.length > 0) {
           setPayments(data);
         }
-        console.log("response" + data);
+        console.log("Fetched payments: ", data);
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error fetching payments: ", error);
       }
     };
 
     fetchPayments();
   }, [session]);
-  console.log(payments);
 
-  // let queryParams = {};
-  //  const handleTrack = (payment) => {
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
 
-  //   if (payments.length > 0) {
-  //     const date = new Date(payment.createdAt);
-  //     const formattedDate = `${date.getFullYear()}-${String(
-  //       date.getMonth() + 1
-  //     ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    try {
+      const response = await axios.post("/api/change-password", {
+        email,
+        currentPassword,
+        newPassword,
+      });
+      console.log("Change password response:", response);
 
-  //     queryParams = {
-  //       paymentid: payment.razorpay_order_id,
-  //       date: formattedDate,
-  //     };
-  //   }
-  //  }
+      if (response.status === 200) {
+        toast.success("Password changed successfully");
+        setCurrentPassword("");
+        setNewPassword("");
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error("An error occurred while changing the password.");
+      console.error("Change password error:", error);
+    }
+  };
+
+  const handleRequestOtp = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post("/api/reset-password", { email });
+      console.log("Request OTP response:", response);
+
+      if (response.status === 200) {
+        toast.success("OTP sent to your email");
+        setUserId(response.data.userId); // Assuming response includes userId
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error("An error occurred while requesting OTP.");
+      console.error("Request OTP error:", error);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.put("/api/reset-password", {
+        otp,
+        id: userId,
+        newPassword,
+      });
+      console.log("Reset password response:", response);
+
+      if (response.status === 200) {
+        toast.success("Password reset successfully");
+        setOtp("");
+        setNewPassword("");
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error("An error occurred while resetting the password.");
+      console.error("Reset password error:", error);
+    }
+  };
+
   const downloadPdf = (payment) => {
     const pdf = new jsPDF();
 
-    // Add header
     pdf.setFontSize(30);
     pdf.text("Book Odysseys", 15, 15);
 
-    // Define the columns for your table
     const columns = ["Field", "Value"];
-
-    // Define the rows for your table
     const rows = [
       ["Name", payment.name],
       ["Email", payment.email],
       ["Phone", payment.phone],
       ["Address", payment.address],
       ["Payment Mode", payment.payment],
-      // Add a row for each cart item
       ...payment.items.map((item) => [
         "Ordered Items",
         `Id: ${item.id}, Name: ${item.title}, Price: ${item.price}`,
@@ -84,17 +132,14 @@ export default function UserInfo() {
       ["", ,],
     ];
 
-    // Add the table to the PDF
     pdf.autoTable(columns, rows, {
-      startY: 40, // Start the table 30 units down
+      startY: 40,
       didDrawPage: (data) => {
-        // Add table header
         pdf.setFontSize(20);
         pdf.text("Invoice", data.settings.margin.left, 35);
       },
     });
 
-    // Add footer
     pdf.setFontSize(12);
     pdf.text(
       "Thank you for shopping with us",
@@ -105,12 +150,10 @@ export default function UserInfo() {
     pdf.save(`order_details_${payment.razorpay_order_id}.pdf`);
   };
 
-  console.log("token inside dashboard " + token);
-  console.log("data inside dashboard " + payments);
   return (
     <div className="max-w-6xl w-full mx-auto px-4 py-6 justify-start md:px-8">
       <div className="flex pb-8 md:pb-0 md:pr-10 xl:pr-20 font-main text-xl md:text-3xl ">
-        Welcome to Book odyssey
+        Welcome to Book Odyssey
       </div>
       <div className="shadow-lg p-8 bg-zince-300/10 flex flex-col  text-md gap-2 my-6">
         <div className="font-main ">
@@ -129,8 +172,8 @@ export default function UserInfo() {
           onClick={() => {
             toast.success("Logout successfully");
             signOut();
-            cookie2.remove("user");
-            cookie2.remove("token");
+            Cookies.remove("user");
+            Cookies.remove("token");
             router.push("/");
           }}
           className="bg-red-500 text-white w-[150px] font-bold px-6 py-2 mt-3"
@@ -186,7 +229,6 @@ export default function UserInfo() {
             </button>
             <Link
               className="flex items-center font-MyFont font-medium w-max  bg-blue-500 text-white py-2 px-4 rounded"
-              // onClick={() => handleTrack(payment)}
               href={{
                 pathname: "/Track",
                 query: {
@@ -201,6 +243,99 @@ export default function UserInfo() {
           </div>
         </div>
       ))}
+      <div className="flex pb-8 md:pb-0 md:pr-10 xl:pr-20 font-main text-xl md:text-3xl mt-8 ">
+        Change Password
+      </div>
+      <form onSubmit={handleChangePassword} className="mb-8">
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">
+            Current Password
+          </label>
+          <input
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">
+            New Password
+          </label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        >
+          Change Password
+        </button>
+      </form>
+      <div className="flex pb-8 md:pb-0 md:pr-10 xl:pr-20 font-main text-xl md:text-3xl mt-8 ">
+        Request OTP for Password Reset
+      </div>
+      <form onSubmit={handleRequestOtp} className="mb-8">
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">
+            Email Address
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        >
+          Request OTP
+        </button>
+      </form>
+      <div className="flex pb-8 md:pb-0 md:pr-10 xl:pr-20 font-main text-xl md:text-3xl mt-8 ">
+        Reset Password
+      </div>
+      <form onSubmit={handleResetPassword}>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">
+            OTP
+          </label>
+          <input
+            type="text"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2">
+            New Password
+          </label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        >
+          Reset Password
+        </button>
+      </form>
     </div>
   );
 }
