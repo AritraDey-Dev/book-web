@@ -1,18 +1,51 @@
-import dbConnect from '../../../../lib/mongodb';
-import Review from '../../../../models/review';
+// app/api/reviews/[bookId]/route.js
+import { connectMongoDB } from "@/lib/mongodb";
+import Review from "@/models/review";
+import { NextResponse } from "next/server";
 
-export default async function handler(req, res) {
-  await dbConnect();
+export async function GET(request, { params }) {
+  try {
+    await connectMongoDB();
+    const reviews = await Review.find({ bookId: params.bookId }).populate("userId", "name");
+    return NextResponse.json(reviews);
+  } catch (error) {
+    return NextResponse.json({ message: "Error fetching reviews" }, { status: 500 });
+  }
+}
 
-  if (req.method === 'GET') {
-    const { bookId } = req.query;
-    try {
-      const reviews = await Review.find({ book: bookId }).populate('user', 'name profilePicture');
-      res.status(200).json(reviews);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  } else {
-    res.status(405).json({ error: "Method not allowed" });
+export async function POST(request, { params }) {
+  try {
+    await connectMongoDB();
+    const { userId, rating, comment } = await request.json();
+    const newReview = new Review({ userId, bookId: params.bookId, rating, comment });
+    await newReview.save();
+    return NextResponse.json(newReview);
+  } catch (error) {
+    return NextResponse.json({ message: "Error creating review" }, { status: 500 });
+  }
+}
+
+export async function PUT(request, { params }) {
+  try {
+    await connectMongoDB();
+    const { rating, comment, likes, dislikes } = await request.json();
+    const updatedReview = await Review.findByIdAndUpdate(
+      params.bookId,
+      { rating, comment, likes, dislikes },
+      { new: true }
+    );
+    return NextResponse.json(updatedReview);
+  } catch (error) {
+    return NextResponse.json({ message: "Error updating review" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request, { params }) {
+  try {
+    await connectMongoDB();
+    await Review.findByIdAndDelete(params.bookId);
+    return NextResponse.json({ message: "Review deleted" });
+  } catch (error) {
+    return NextResponse.json({ message: "Error deleting review" }, { status: 500 });
   }
 }

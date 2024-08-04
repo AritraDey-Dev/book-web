@@ -1,53 +1,38 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import ReviewForm from '../../../components/ReviewForm';
-import ReviewsList from '../../../components/ReviewsList';
+// app/Book/[id]/page.js
+"use client";
+import React from "react";
+import { useSession } from "next-auth/react";
+import ReviewForm from "@/components/ReviewForm";
+import ReviewList from "@/components/ReviewList";
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
-const BookDetailsPage = () => {
-  const router = useRouter();
-  const { id } = router.query;
-  const [book, setBook] = useState(null);
-  const [reviews, setReviews] = useState([]);
+const BookPage = ({ params }) => {
+  const { data: session } = useSession();
+  const bookId = params.id;
+  const userId = session?.user?.id;
 
-  useEffect(() => {
-    if (id) {
-      fetch(`/api/books/${id}`)
-        .then((res) => res.json())
-        .then((data) => setBook(data));
-
-      fetch(`/api/reviews/${id}`)
-        .then((res) => res.json())
-        .then((data) => setReviews(data));
-    }
-  }, [id]);
-
-  const handleAddReview = async (review) => {
-    const response = await fetch('/api/reviews/add', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(review)
-    });
-
-    if (response.ok) {
-      const newReview = await response.json();
-      setReviews((prevReviews) => [...prevReviews, newReview]);
+  const handleReviewSubmit = async (reviewData) => {
+    try {
+      await axios.post(`/api/reviews/${bookId}`, reviewData);
+      toast.success("Review submitted successfully");
+    } catch (error) {
+      toast.error("Failed to submit review");
+      console.error("Error submitting review:", error);
     }
   };
 
   return (
-    <div>
-      {book && (
-        <div>
-          <h1>{book.title}</h1>
-          <p>{book.description}</p>
-          <ReviewForm bookId={id} userId={/* userId from auth context */} onSubmit={handleAddReview} />
-          <ReviewsList reviews={reviews} />
-        </div>
-      )}
+    <div className="book-page">
+      {/* Your book details component */}
+      <div className="reviews-section">
+        <h2>Reviews</h2>
+        {session && <ReviewForm bookId={bookId} userId={userId} onSubmit={handleReviewSubmit} />}
+        <ReviewList bookId={bookId} userId={userId} />
+      </div>
     </div>
   );
 };
 
-export default BookDetailsPage;
+export default BookPage;
+

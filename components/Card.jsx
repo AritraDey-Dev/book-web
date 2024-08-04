@@ -5,33 +5,34 @@ import toast from "react-hot-toast";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WIshlistContext";
 import { FcLikePlaceholder, FcLike } from "react-icons/fc";
+import Link from "next/link";
 
 function Card({ books }) {
-
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, WishlistItems } = useWishlist();
   const [liked, setLiked] = useState([]);
+  const [hoveredBook, setHoveredBook] = useState(null);
 
   useEffect(() => {
     if (WishlistItems && WishlistItems.length > 0) {
-      // Set the liked state based on the items in the wishlist
       setLiked(WishlistItems.map((item) => item.id));
     } else {
-      // Handle the case when WishlistItems is empty
-      // You can set liked to an empty array or take any other appropriate action
       setLiked([]);
     }
-  }, []);
+  }, [WishlistItems]);
 
   const handleCardClick = (selfLink) => {
     window.open(selfLink, "_blank");
   };
+
   return (
     <div className="grid grid-cols-2 gap-4 py-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
       {books.map((book, index) => (
         <div
           key={index}
-          className="flex flex-col justify-between rounded border-2 border-bggray align-baseline last:hidden sm:last:flex sm:even:hidden md:last:hidden md:even:flex lg:last:flex"
+          className="relative flex flex-col justify-between rounded border-2 border-bggray align-baseline last:hidden sm:last:flex sm:even:hidden md:last:hidden md:even:flex lg:last:flex"
+          onMouseEnter={() => setHoveredBook(book.id)}
+          onMouseLeave={() => setHoveredBook(null)}
         >
           <div
             onClick={() => handleCardClick(book.volumeInfo.previewLink)}
@@ -40,7 +41,7 @@ function Card({ books }) {
             <Image
               src={book.volumeInfo.imageLinks?.thumbnail || "/default.jpg"}
               priority="high"
-              unoptimized={true} // {false} | {true}
+              unoptimized={true}
               className="inline-block align-baseline"
               width={500}
               height={500}
@@ -50,7 +51,7 @@ function Card({ books }) {
               }}
             />
           </div>
-          <div className="content px-4 py-4 flex flex-col justify-between   ">
+          <div className="content px-4 py-4 flex flex-col justify-between">
             <div className="mb-2 md:line-clamp-1">
               <h3 className="text-base font-MyFont">{book.volumeInfo.title}</h3>
             </div>
@@ -62,52 +63,45 @@ function Card({ books }) {
                   : 299}
               </span>
             </div>
-            <div className="flex w-max justify-between ">
+            <div className="flex flex-col w-max justify-between">
               <div className="cursor-pointer pt-4 px-1">
                 <button
                   onClick={() => {
                     const bookDetails = {
                       id: book.id,
                       title: book.volumeInfo.title,
-                      author: book.volumeInfo.authors, // Assuming authors is an array
+                      author: book.volumeInfo.authors,
                       price: book.saleInfo?.listPrice?.amount || 299,
                       image: book.volumeInfo.imageLinks?.thumbnail,
                       preview: book.volumeInfo.previewLink,
-                      quantity: 1, // Price or a default value
-                      // Add more book details as needed
+                      quantity: 1,
                     };
-                  // Pass the book details to addToCart
-                    addToCart(bookDetails,book.id); // Pass the book details to addToCart
-                    console.log("booksdetail", bookDetails);
-                    console.log("preview", book.preview);
+                    addToCart(bookDetails, book.id);
                   }}
                   className="bg-textgray justify-center px-2 py-2 font-MyFont text-primary flex-1 rounded md:px-4 text-sm font-semibold"
                 >
                   Add To Cart
                 </button>
               </div>
-
               <div className="flex cursor-pointer w-max px-1 pt-2">
                 <button
                   onClick={() => {
                     const bookDetails = {
                       id: book.id,
                       title: book.volumeInfo.title,
-                      author: book.volumeInfo.authors, // Assuming authors is an array
+                      author: book.volumeInfo.authors,
                       price: book.saleInfo?.listPrice?.amount || 299,
                       image: book.volumeInfo.imageLinks?.thumbnail,
                       preview: book.volumeInfo.previewLink,
-                      quantity: 1, // Price or a default value
-                      // Add more book details as needed
+                      quantity: 1,
                     };
                     if (liked.includes(book.id)) {
                       removeFromWishlist(book.id);
-                      setLiked(liked.filter((id) => id !== book.id)); // Remove book.id from liked
+                      setLiked(liked.filter((id) => id !== book.id));
                       toast.error("Book Removed From Wishlist successfully");
                     } else {
                       addToWishlist(bookDetails);
-                    
-                      setLiked([...liked, book.id]); // Add book.id to liked
+                      setLiked([...liked, book.id]);
                     }
                   }}
                   className="outline-btn-color cursor-pointer basis-1/4 rounded p-1"
@@ -120,8 +114,22 @@ function Card({ books }) {
                   )}
                 </button>
               </div>
+              <Link href={`/Book/${book.id}`} className="pt-2 px-1">
+                <button className="bg-textgray justify-center px-2 py-2 font-MyFont text-primary flex-1 rounded md:px-4 text-sm font-semibold">
+                  Review
+                </button>
+              </Link>
             </div>
           </div>
+          {hoveredBook === book.id && (
+            <div className="absolute top-0 right-full w-64 bg-white bg-opacity-90 p-4 rounded-lg shadow-lg z-10 flex flex-col justify-center mr-4">
+              <h4 className="text-lg font-bold mb-2">{book.volumeInfo.title}</h4>
+              <p><strong>Author:</strong> {book.volumeInfo.authors?.join(", ")}</p>
+              <p><strong>Publisher:</strong> {book.volumeInfo.publisher}</p>
+              <p><strong>Published Date:</strong> {book.volumeInfo.publishedDate}</p>
+              <p className="truncate"><strong>Description:</strong> {book.volumeInfo.description}</p>
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -129,3 +137,4 @@ function Card({ books }) {
 }
 
 export default Card;
+

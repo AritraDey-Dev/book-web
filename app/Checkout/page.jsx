@@ -5,15 +5,16 @@ import { useCart } from "@/context/CartContext"; // Update the path to your Cart
 import toast from "react-hot-toast";
 import { MdArrowBackIos } from "react-icons/md";
 import { useRouter } from "next/navigation";
-// import { parseCookies } from "nookies";
-import Cookies from "js-cookie";
+import { loadStripe } from "@stripe/stripe-js";
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 export default function Checkout() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [payment, setpayment] = useState("Bank");
+  const [payment, setPayment] = useState("Bank");
 
   const router = useRouter();
   const { cartItems, removeFromCart, calculateTotalPrice } = useCart();
@@ -24,7 +25,6 @@ export default function Checkout() {
 
     try {
       setItems(cartItems);
-      console.log("items " + items);
       const total = calculateTotalPrice();
       const res = await fetch("api/cart", {
         method: "POST",
@@ -41,117 +41,46 @@ export default function Checkout() {
           total: total,
         }),
       });
-      // console.log("cartitems",cartItemss);
-      // console.log("items", cartitems);
       if (res.ok) {
         setName("");
-
         toast.success("Payment Done successfully");
-        console.log(totalpricevalue);
         router.push("/");
       } else {
-        console.log("data saving failed.");
+        console.log("Data saving failed.");
       }
     } catch (error) {
       console.log("Error during saving data into cart: ", error);
     }
   };
+
   const makePayment = async () => {
-    const token = Cookies.get("token"); // Get the token from cookies
-    console.log("Token inside chectoutjs " + token);
-    // const { token } = parseCookies();
-    // console.log("Token inside chectoutjs " + token);
     setItems(cartItems);
     const total = calculateTotalPrice();
 
-    // Make API call to the serverless API to create a Razorpay order
-    const data = await fetch("api/razorpay", {
+    const stripe = await stripePromise;
+    const { id } = await fetch("/api/create-checkout-session", {
       method: "POST",
-      body: JSON.stringify({
-        total,
-      }),
-    }).then((t) => t.json());
-    console.log("Razorpay data", data);
-    var options = {
-      key: process.env.RAZORPAY_API_KEY,
-      name: name,
-      currency: data.currency,
-      amount: data.amount,
-      order_id: data.id,
-      description: "Thank you for your purchase",
-      handler: async function (response) {
-        console.log(response);
-        const paymentData = {
-          name,
-          email,
-          phone,
-          address,
-          payment,
-          items,
-          total,
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_order_id: response.razorpay_order_id,
-          razorpay_signature: response.razorpay_signature,
-        };
-
-        // Make API call to verify the payment on the server
-        const verifyResponse = await fetch("api/paymentverify", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(paymentData),
-        });
-
-        const queryString = `name=${name}&email=${email}&phone=${phone}&address=${address}&payment=${payment}
-      \&total=${total}&razorpay_payment_id=${
-          response.razorpay_payment_id
-        }&razorpay_order_id=${response.razorpay_order_id}&razorpay_signature=${
-          response.razorpay_signature
-        }`;
-
-        const verifyResult = await verifyResponse.json();
-        console.log("response verify==", verifyResult);
-        if (verifyResult?.message == "success") {
-          setName("");
-          console.log(queryString);
-          toast.success("Payment Done successfully");
-          console.log("Onclick clicked");
-         router.push(`/paymentsuccess?${queryString}`);
-          cartItems.map((item) => removeFromCart(item.id));
-        } else {
-          console.log("Data saving failed.");
-        }
-        console.log(items);
+      headers: {
+        "Content-Type": "application/json",
       },
-      prefill: {
-        name: name,
-        email: email,
-        contact: phone,
-      },
-    };
+      body: JSON.stringify({ items: cartItems }),
+    }).then((res) => res.json());
 
-    const paymentObject = new window.Razorpay(options);
-    paymentObject.open();
-
-    paymentObject.on("payment.failed", function (response) {
-      alert("Payment failed. Please try again. Contact support for help");
-      console.log(response.razorpay_payment_id);
-      console.log(response.razorpay_order_id);
-      console.log(response.razorpay_signature);
+    const { error } = await stripe.redirectToCheckout({
+      sessionId: id,
     });
+
+    if (error) {
+      console.error("Error redirecting to Stripe checkout:", error);
+      toast.error("Failed to redirect to payment page.");
+    }
   };
 
   return (
     <div className="max-w-6xl w-full mx-auto px-4 py-6 justify-start md:px-8">
-      <h1 className="text-center font-main text-2xl font-semibold lg:text-3xl">
-        {" "}
-        Checkout
-      </h1>
+      <h1 className="text-center font-main text-2xl font-semibold lg:text-3xl">Checkout</h1>
       <p className="mb-8 text-center font-MyFont lg:mb-14">
-        Provide your payment and delivery address information to finalize your
-        order.
+        Provide your payment and delivery address information to finalize your order.
       </p>
       <form
         onSubmit={saveCartToDatabase}
@@ -209,7 +138,6 @@ export default function Checkout() {
           </div>
           <label className="ml-1">
             <input
-              // onChange={(e) => setEmail(e.target.value)}
               className="mr-2 scale-125 accent-skin-accent outline-skin-accent"
               type="checkbox"
               name="saveInfo"
@@ -231,7 +159,6 @@ export default function Checkout() {
               className="text-link hidden items-center underline decoration-dashed underline-offset-8 hover:decoration-solid md:inline-flex font-MyFont opacity-60"
               href="/"
             >
-              {" "}
               <MdArrowBackIos />
               Return To Cart
             </Link>
@@ -260,7 +187,6 @@ export default function Checkout() {
             <div className="flex items-center py-6 justify-between">
               <span className="text-lg font-semibold">Total</span>
               <span className="text-xl font-semibold">
-                {" "}
                 {calculateTotalPrice()} &#x20B9;
               </span>
             </div>
@@ -273,14 +199,14 @@ export default function Checkout() {
                   id="Cash"
                   className="h-5 w-5 mt-2  border-2 border-black cursor-default rounded-full bg-primary shadow-[0_0_0_2px] shadow-bggray  focus-within:border-2 focus-within:border-skin-accent"
                   checked={payment === "Cash"}
-                  onChange={(e) => setpayment(e.target.value)}
+                  onChange={(e) => setPayment(e.target.value)}
                 />
                 <h1 className=" ml-auto w-11/12 mt-2 text-left font-bold leading-none text-skin-dark">
-                  Cash on Delivery{" "}
+                  Cash on Delivery
                 </h1>
               </label>
 
-              <label htmlFor="Cash" className="flex">
+              <label htmlFor="Bank" className="flex">
                 <input
                   type="radio"
                   name="payment"
@@ -288,10 +214,10 @@ export default function Checkout() {
                   id="Bank"
                   className="h-5 w-5 mt-2  border-2 border-black cursor-default rounded-full bg-primary shadow-[0_0_0_2px] shadow-bggray  focus-within:border-2 focus-within:border-skin-accent"
                   checked={payment === "Bank"}
-                  onChange={(e) => setpayment(e.target.value)}
+                  onChange={(e) => setPayment(e.target.value)}
                 />
                 <h1 className=" ml-auto w-11/12 mt-2 text-left font-bold leading-none text-skin-dark">
-                  Bank Transfer{" "}
+                  Bank Transfer
                   <p className="flex text-sm font-normal py-1 font-MyFont">
                     Make your payment directly from googlepay, paytm, UPI
                   </p>
@@ -301,9 +227,7 @@ export default function Checkout() {
 
             <button
               type="button"
-              onClick={() => {
-                makePayment();
-              }}
+              onClick={makePayment}
               className="bg-textgray text-white w-full flex justify-center py-2 px-2 mt-2 font-MyFont text-lg font-medium md:rounded md:py-1"
             >
               <span>Place order</span>
@@ -314,3 +238,5 @@ export default function Checkout() {
     </div>
   );
 }
+
+
