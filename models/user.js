@@ -1,3 +1,4 @@
+// models/user.js
 import mongoose, { Schema, models } from "mongoose";
 
 const userSchema = new Schema(
@@ -25,10 +26,13 @@ const userSchema = new Schema(
       type: Number,
       default: 0,
     },
+    followers: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
+    following: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
   },
   { timestamps: true }
 );
 
 const User = models.User || mongoose.model("User", userSchema);
 export default User;
+
 

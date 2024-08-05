@@ -1,72 +1,124 @@
-# E-Commerce Bookstore README
+```markdown
+# Book Odyssey
 
-Welcome to the E-Commerce Bookstore project! This repository is built using Next.js and MongoDB, providing a fully functional online bookstore with features like a shopping cart and wishlist.
-Follow the guide below to understand the project structure and navigate through the files.
+Welcome to Book Odyssey! This web application allows users to browse, review, and purchase books. Users can also manage their profiles, follow other users, and see a leaderboard of top reviewers.
 
-### Table of Contents
-1. Project Overview
-1. Prerequisites
-1. Getting Started
-1. File Structure
-1. Configuration
-1. Running the Application
-1. Contributing
-   
-### Project Overview
-  This e-commerce bookstore is a web application developed using Next.js for the frontend and MongoDB for the backend. It provides users with the ability to browse, search, add books to their cart, and create wishlists.
+## Table of Contents
 
-### Prerequisites
-Make sure you have the following installed on your machine:
-Node.js
-npm
-MongoDB
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Installation](#installation)
+- [Environment Variables](#environment-variables)
+- [Usage](#usage)
+- [API Endpoints](#api-endpoints)
+- [Contributing](#contributing)
+- [License](#license)
 
-### Getting Started
-Clone the repository:
-bash
-Copy code
+## Features
 
-git clone [https://github.com/LordMashh/Bookstore-Next.git](https://github.com/LordMashh/Bookstore-Next.git)
+- **User Authentication**: Sign up, login, and manage user profiles.
+- **Book Management**: Add, edit, and delete books.
+- **Wishlist**: Add books to a wishlist for future reference.
+- **Cart**: Add books to a cart and proceed to checkout.
+- **Reviews and Ratings**: Write reviews, rate books, and interact with other users' reviews.
+- **Points and Rewards**: Earn points by writing reviews and liking/disliking reviews.
+- **Leaderboard**: Display top reviewers based on their points.
+- **Follow/Unfollow**: Follow other users and see their reviews.
 
-Change into the project directory:
-bash,
-Copy code,
-cd e-commerce-bookstore,
+## Tech Stack
 
-Install dependencies:
-bash,
-Copy code,
-npm install,
-File Structure,
-This project follows a clear and organized file structure.
+- **Frontend**: React, Next.js
+- **Backend**: Node.js, Express
+- **Database**: MongoDB
+- **Authentication**: NextAuth.js
+- **Payment**: Stripe
+- **Styling**: Tailwind CSS
 
-### File Structure
-pages: Contains the main pages of the application, such as the home page and book details page.
-components: Reusable React components used throughout the application.
-styles: CSS files, including global styles and module-specific styles.
-public: Static assets like images and favicon.
-server: Backend files, including database configuration and API routes.
+## Installation
 
-### Configuration
-Configure the MongoDB connection in the server/db.js file. Update the connection URL with your MongoDB database credentials.
+1. **Clone the repository**
 
-### Running the Application
-Run the following command to start the development server:
-bash,
-Copy code,
-npm run dev,
-Visit http://localhost:3000 in your browser to view the application.
+   ```sh
+   git clone https://github.com/adey-github/book-web.git
+   cd book-web
+   ```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+2. **Install dependencies**
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+   ```sh
+   npm install
+   ```
 
-### Contributing
-Feel free to contribute to the project by opening issues or submitting pull requests.
-## Deploy on Vercel
+3. **Set up environment variables**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   Create a `.env` file in the root directory and add the following variables:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+   ```env
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+   STRIPE_SECRET_KEY=your_stripe_secret_key
+   MONGODB_URI=your_mongodb_connection_string
+   NEXTAUTH_URL=http://localhost:3000
+   NEXTAUTH_SECRET=your_nextauth_secret
+   JWT_SECRET=your_jwt_secret
+   ```
 
----
+4. **Run the development server**
+
+   ```sh
+   npm run dev
+   ```
+
+5. **Open your browser**
+
+   Visit [http://localhost:3000](http://localhost:3000) to view the application.
+
+## Usage
+
+- **Home Page**: Browse books and see featured books.
+- **Profile Page**: View and update your profile information.
+- **Book Details Page**: View book details, add to cart, wishlist, and see reviews.
+- **Cart Page**: View cart items and proceed to checkout.
+- **Wishlist Page**: View and manage your wishlist.
+- **Leaderboard Page**: See the top reviewers.
+
+## API Endpoints
+
+- **Authentication**
+  - `POST /api/auth/register`: Register a new user
+  - `POST /api/auth/login`: Login a user
+  - `POST /api/auth/logout`: Logout a user
+
+- **Books**
+  - `GET /api/books`: Get all books
+  - `POST /api/books/create`: Create a new book
+  - `GET /api/books/:id`: Get a single book
+  - `PUT /api/books/:id`: Update a book
+  - `DELETE /api/books/:id`: Delete a book
+
+- **Reviews**
+  - `GET /api/reviews/:bookId`: Get all reviews for a book
+  - `POST /api/reviews/:bookId`: Create a new review
+  - `PUT /api/reviews/:reviewId`: Update a review
+  - `DELETE /api/reviews/:reviewId`: Delete a review
+
+- **Users**
+  - `GET /api/users/:id`: Get a user profile
+  - `PUT /api/users/:id`: Update a user profile
+
+- **Leaderboard**
+  - `GET /api/leaderboard`: Get the leaderboard
+
+- **Follow/Unfollow**
+  - `POST /api/users/:id/follow`: Follow a user
+  - `POST /api/users/:id/unfollow`: Unfollow a user
+
+## Contributing
+
+We welcome contributions! Please read our [contributing guidelines](CONTRIBUTING.md) for more information.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+```
+
+Make sure to replace placeholders like `your_stripe_publishable_key`, `your_stripe_secret_key`, `your_mongodb_connection_string`, etc., with your actual credentials. If you have any additional instructions or information, you can add them to the respective sections.

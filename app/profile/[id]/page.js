@@ -17,12 +17,15 @@ const ProfilePage = () => {
     image: '',
   });
 
+  const [users, setUsers] = useState([]);
+  const [following, setFollowing] = useState([]);
   const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (session) {
       fetchUserProfile();
+      fetchAllUsers();
     }
   }, [session]);
 
@@ -30,8 +33,18 @@ const ProfilePage = () => {
     try {
       const response = await axios.get(`/api/users/${userId}`);
       setProfile(response.data);
+      setFollowing(response.data.following);
     } catch (error) {
       console.error('Error fetching profile:', error);
+    }
+  };
+
+  const fetchAllUsers = async () => {
+    try {
+      const response = await axios.get('/api/users');
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
     }
   };
 
@@ -85,6 +98,24 @@ const ProfilePage = () => {
     }
   };
 
+  const handleFollow = async (id) => {
+    try {
+      await axios.post(`/api/follow/${id}`, { userId: session.user.id });
+      setFollowing([...following, id]);
+    } catch (error) {
+      console.error('Error following user:', error);
+    }
+  };
+
+  const handleUnfollow = async (id) => {
+    try {
+      await axios.post(`/api/unfollow/${id}`, { userId: session.user.id });
+      setFollowing(following.filter((followedId) => followedId !== id));
+    } catch (error) {
+      console.error('Error unfollowing user:', error);
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto p-4">
       <h2 className="text-2xl font-bold mb-4">Profile Page</h2>
@@ -129,9 +160,31 @@ const ProfilePage = () => {
           {loading ? 'Updating...' : 'Update Profile'}
         </button>
       </form>
+      <h2 className="text-xl font-bold mt-8 mb-4">Users</h2>
+      <ul>
+        {users.map((user) => (
+          <li key={user._id} className="flex items-center justify-between mb-4">
+            <span>{user.name}</span>
+            {following.includes(user._id) ? (
+              <button
+                onClick={() => handleUnfollow(user._id)}
+                className="bg-red-500 text-white px-4 py-2 rounded-md"
+              >
+                Unfollow
+              </button>
+            ) : (
+              <button
+                onClick={() => handleFollow(user._id)}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md"
+              >
+                Follow
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
 
 export default ProfilePage;
-

@@ -375,11 +375,11 @@ export default function Navbar() {
               {" "}
               <SlSocialInstagram className="icon-bottom" />{" "}
             </Link>
-            <Link href="https://t.me/+919023373686">
+            <Link href="https://t.me/+917044380060">
               {" "}
               <PiTelegramLogo className="icon-bottom" />{" "}
             </Link>
-            <Link href="mailto:mayankkush0842@gmail.com">
+            <Link href="mail:aritradey.nitt@gmail.com">
               {" "}
               <IoMailUnreadOutline className="icon-bottom" />
             </Link>

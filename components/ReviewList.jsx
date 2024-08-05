@@ -1,4 +1,3 @@
-// components/ReviewList.jsx
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
@@ -34,7 +33,9 @@ const ReviewList = ({ bookId, userId }) => {
 
   const handleToggleLike = async (reviewId) => {
     const review = reviews.find((review) => review._id === reviewId);
-    console.log("Toggling like for review:", review);
+    if (!review.likes) {
+      review.likes = [];
+    }
     const isLiked = review.likes.includes(userId);
     try {
       const response = await axios.put(`/api/reviews/${reviewId}`, {
@@ -53,7 +54,9 @@ const ReviewList = ({ bookId, userId }) => {
 
   const handleToggleDislike = async (reviewId) => {
     const review = reviews.find((review) => review._id === reviewId);
-    console.log("Toggling dislike for review:", review);
+    if (!review.dislikes) {
+      review.dislikes = [];
+    }
     const isDisliked = review.dislikes.includes(userId);
     try {
       const response = await axios.put(`/api/reviews/${reviewId}`, {
@@ -89,20 +92,20 @@ const ReviewList = ({ bookId, userId }) => {
             <button
               onClick={() => handleToggleLike(review._id)}
               className={`flex items-center space-x-2 ${
-                review.likes.includes(userId) ? "bg-blue-500" : "bg-black"
+                review.likes?.includes(userId) ? "bg-blue-500" : "bg-black"
               } text-white px-2 py-1 rounded`}
             >
               <AiFillLike />
-              <span>Like ({review.likes.length})</span>
+              <span>Like ({review.likes?.length || 0})</span>
             </button>
             <button
               onClick={() => handleToggleDislike(review._id)}
               className={`flex items-center space-x-2 ${
-                review.dislikes.includes(userId) ? "bg-blue-500" : "bg-black"
+                review.dislikes?.includes(userId) ? "bg-blue-500" : "bg-black"
               } text-white px-2 py-1 rounded`}
             >
               <AiFillDislike />
-              <span>Dislike ({review.dislikes.length})</span>
+              <span>Dislike ({review.dislikes?.length || 0})</span>
             </button>
             {review.userId._id === userId && (
               <button

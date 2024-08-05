@@ -6,6 +6,7 @@ import axios from "axios";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WIshlistContext";
 import { FcLikePlaceholder, FcLike } from "react-icons/fc";
+import Link from "next/link";
 
 function UserBookCard({ books, setBooks }) {
   const { addToCart } = useCart();
@@ -69,7 +70,7 @@ function UserBookCard({ books, setBooks }) {
               <span>Price: </span>
               <span>{299}</span>
             </div>
-            <div className="flex w-max justify-between">
+            <div className="flex flex-col w-max justify-between">
               <div className="cursor-pointer pt-4 px-1">
                 <button
                   onClick={() => {
@@ -83,8 +84,6 @@ function UserBookCard({ books, setBooks }) {
                       quantity: 1,
                     };
                     addToCart(bookDetails, book._id);
-                    console.log("booksdetail", bookDetails);
-                    console.log("preview", book.previewLink);
                   }}
                   className="bg-textgray justify-center px-2 py-2 font-MyFont text-primary flex-1 rounded md:px-4 text-sm font-semibold"
                 >
@@ -124,7 +123,12 @@ function UserBookCard({ books, setBooks }) {
                 </button>
               </div>
             </div>
-            <div className="flex justify-end mt-2">
+            <div className="flex justify-end mt-2 space-x-2">
+              <Link href={`/Book/${book._id}`}>
+                <button className="bg-textgray justify-center px-2 py-2 font-MyFont text-primary flex-1 rounded md:px-4 text-sm font-semibold">
+                  Review
+                </button>
+              </Link>
               <button
                 onClick={() => handleDelete(book._id)}
                 className="bg-red-600 text-white px-4 py-2 rounded-md"
@@ -133,7 +137,7 @@ function UserBookCard({ books, setBooks }) {
               </button>
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 p-4 bg-gray-800 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="absolute left-0 bottom-0 p-4 bg-gray-800 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             {book.description}
           </div>
         </div>
@@ -143,5 +147,4 @@ function UserBookCard({ books, setBooks }) {
 }
 
 export default UserBookCard;
-
 

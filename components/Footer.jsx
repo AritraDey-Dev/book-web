@@ -67,25 +67,25 @@ export default function Footer() {
           <p className="mb-3 mr-4 text-sm font-MyFont opacity-80">
             Email:
             <Link
-              href="mailto:mayankkush0842@gmail.com"
+              href="mailto:aritradey.nitt@gmail.com"
               className="text-link mt-1 block font-MyFont underline decoration-dashed underline-offset-2 hover:decoration-solid "
             >
-              mayankkush0842@gmail <br className='flex md:hidden'></br>.com
+              aritradey.nitt@gmail <br className='flex md:hidden'></br>.com
             </Link>
           </p>
           <p className="mb-3 text-sm font-MyFont">
             Phone:
             <Link
-              href="tel:+919023373685"
+              href="tel:+917044380060"
               className="text-link mt-1 block font-MyFont underline decoration-dashed underline-offset-2 hover:decoration-solid "
             >
-              +919023373685
+              +917044380060
             </Link>
           </p>
           <p className="mb-3 text-sm font-MyFont">
             Address:
             <span className="mt-1 block font-MyFont">
-              Ahmedabad, Gujarat, INDIA
+              NIT, Tamil Nadu, INDIA
             </span>
           </p>
         </div>
@@ -97,15 +97,15 @@ export default function Footer() {
               {" "}
               <FiFacebook className="icon-bottom " />{" "}
             </Link>
-            <Link href="https://www.instagram.com/_mayank._k___/">
+            <Link href="https://www.instagram.com/aritradey">
               {" "}
               <SlSocialInstagram className="icon-bottom" />{" "}
             </Link>
-            <Link href="https://t.me/+919023373686">
+            <Link href="https://t.me/+917044380060">
               {" "}
               <PiTelegramLogo className="icon-bottom" />{" "}
             </Link>
-            <Link href="mailto:mayankkush0842@gmail.com">
+            <Link href="mailto:aritradey.nitt@gmail.com">
               {" "}
               <IoMailUnreadOutline className="icon-bottom" />
             </Link>
@@ -122,10 +122,10 @@ export default function Footer() {
             Crafted by
             <Link
               className="underline decoration-dashed underline-offset-2 hover:decoration-solid"
-              href="https://lordmashh.github.io/Portfolio_mayank/"
+              href="https://github.com/adey-github/book-web/"
             >
               {" "}
-              Mayank kushwaha
+              Aritra Dey
             </Link>
             .
           </span>
