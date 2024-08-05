@@ -110,17 +110,25 @@ export default function Navbar() {
             Cart
           </Link>
           {session ? (
-            <Link
-              href={`/profile/${session.user.id}`}
-              className="hover:opacity-95 opacity-70 flex flex-row link link-underline link-underline-black"
-            >
-              <img
-                src={profile?.image || "/default-avatar.png"}
-                alt="Profile Picture"
-                className="w-8 h-8 rounded-full mr-3"
-              />
-              <span>{profile?.name || "Profile"}</span>
-            </Link>
+            <>
+              <Link
+                href={`/profile/${session.user.id}`}
+                className="hover:opacity-95 opacity-70 flex flex-row link link-underline link-underline-black"
+              >
+                <img
+                  src={profile?.image || "/default-avatar.png"}
+                  alt="Profile Picture"
+                  className="w-8 h-8 rounded-full mr-3"
+                />
+                <span>{profile?.name || "Profile"}</span>
+              </Link>
+              <Link
+                href="/leaderboard"
+                className="hover:opacity-95 opacity-70 flex flex-row link link-underline link-underline-black"
+              >
+                Leaderboard
+              </Link>
+            </>
           ) : (
             <Link
               href="/Login"
@@ -284,21 +292,33 @@ export default function Navbar() {
                   </Link>
                 </li>
                 {session ? (
-                  <li className="flex w-full flex-col">
-                    <Link
-                      href={`/profile/${session.user.id}`}
-                      onClick={closeModal}
-                      className="flex items-center gap-x-2 py-1 px-2 text-xl"
-                    >
-                      {" "}
-                      <span>Profile</span>
-                      <img
-                        src={profile?.image || "/default-avatar.png"}
-                        alt="Profile Picture"
-                        className="w-8 h-8 rounded-full ml-3"
-                      />
-                    </Link>
-                  </li>
+                  <>
+                    <li className="flex w-full flex-col">
+                      <Link
+                        href={`/profile/${session.user.id}`}
+                        onClick={closeModal}
+                        className="flex items-center gap-x-2 py-1 px-2 text-xl"
+                      >
+                        {" "}
+                        <span>Profile</span>
+                        <img
+                          src={profile?.image || "/default-avatar.png"}
+                          alt="Profile Picture"
+                          className="w-8 h-8 rounded-full ml-3"
+                        />
+                      </Link>
+                    </li>
+                    <li className="flex w-full flex-col">
+                      <Link
+                        href="/leaderboard"
+                        onClick={closeModal}
+                        className="flex items-center gap-x-2 py-1 px-2 text-xl"
+                      >
+                        {" "}
+                        <span>Leaderboard</span>
+                      </Link>
+                    </li>
+                  </>
                 ) : (
                   <li className="flex w-full flex-col">
                     <Link
@@ -369,5 +389,4 @@ export default function Navbar() {
     </div>
   );
 }
-
 

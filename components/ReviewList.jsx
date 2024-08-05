@@ -12,6 +12,7 @@ const ReviewList = ({ bookId, userId }) => {
     const fetchReviews = async () => {
       try {
         const response = await axios.get(`/api/reviews/${bookId}`);
+        console.log("Fetched reviews:", response.data);
         setReviews(response.data);
       } catch (error) {
         console.error("Error fetching reviews:", error);
@@ -33,6 +34,7 @@ const ReviewList = ({ bookId, userId }) => {
 
   const handleToggleLike = async (reviewId) => {
     const review = reviews.find((review) => review._id === reviewId);
+    console.log("Toggling like for review:", review);
     const isLiked = review.likes.includes(userId);
     try {
       const response = await axios.put(`/api/reviews/${reviewId}`, {
@@ -41,6 +43,7 @@ const ReviewList = ({ bookId, userId }) => {
           ? review.likes.filter((id) => id !== userId)
           : [...review.likes, userId],
       });
+      console.log("Updated review after like:", response.data);
       setReviews(reviews.map((rev) => (rev._id === reviewId ? response.data : rev)));
     } catch (error) {
       toast.error("Failed to toggle like");
@@ -50,6 +53,7 @@ const ReviewList = ({ bookId, userId }) => {
 
   const handleToggleDislike = async (reviewId) => {
     const review = reviews.find((review) => review._id === reviewId);
+    console.log("Toggling dislike for review:", review);
     const isDisliked = review.dislikes.includes(userId);
     try {
       const response = await axios.put(`/api/reviews/${reviewId}`, {
@@ -58,6 +62,7 @@ const ReviewList = ({ bookId, userId }) => {
           ? review.dislikes.filter((id) => id !== userId)
           : [...review.dislikes, userId],
       });
+      console.log("Updated review after dislike:", response.data);
       setReviews(reviews.map((rev) => (rev._id === reviewId ? response.data : rev)));
     } catch (error) {
       toast.error("Failed to toggle dislike");
@@ -83,14 +88,18 @@ const ReviewList = ({ bookId, userId }) => {
           <div className="review-actions flex space-x-4 mt-2">
             <button
               onClick={() => handleToggleLike(review._id)}
-              className={`flex items-center space-x-2 ${review.likes.includes(userId) ? 'bg-blue-500' : 'bg-black'} text-white px-2 py-1 rounded`}
+              className={`flex items-center space-x-2 ${
+                review.likes.includes(userId) ? "bg-blue-500" : "bg-black"
+              } text-white px-2 py-1 rounded`}
             >
               <AiFillLike />
               <span>Like ({review.likes.length})</span>
             </button>
             <button
               onClick={() => handleToggleDislike(review._id)}
-              className={`flex items-center space-x-2 ${review.dislikes.includes(userId) ? 'bg-blue-500' : 'bg-black'} text-white px-2 py-1 rounded`}
+              className={`flex items-center space-x-2 ${
+                review.dislikes.includes(userId) ? "bg-blue-500" : "bg-black"
+              } text-white px-2 py-1 rounded`}
             >
               <AiFillDislike />
               <span>Dislike ({review.dislikes.length})</span>

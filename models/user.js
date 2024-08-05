@@ -21,9 +21,14 @@ const userSchema = new Schema(
     bio: {
       type: String,
     },
+    points: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
 
 const User = models.User || mongoose.model("User", userSchema);
 export default User;
+
