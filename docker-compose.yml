@@ -9,8 +9,12 @@ services:
       - "3000:3000"
     environment:
       MONGO_URI: mongodb://mongo:27017/mydatabase
+    env_file:
+      - .env
     depends_on:
       - mongo
+    networks:
+      - book_web_network
 
   mongo:
     image: mongo:latest
@@ -19,6 +23,12 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+    networks:
+      - book_web_network
 
 volumes:
   mongo_data:
+
+networks:
+  book_web_network:
+    driver: bridge

@@ -1,0 +1,35 @@
+name: CI - Docker Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Build Docker image
+      run: |
+        docker build -t nextjs-app .
+
+    - name: Run lint inside Docker container
+      run: |
+        docker run --rm nextjs-app npm run lint
+
+    - name: Run build inside Docker container (optional if already done in Dockerfile)
+      run: |
+        docker run --rm nextjs-app npm run build
+
+    - name: Start container to verify it runs
+      run: |
+        docker run -d --name nextjs_test -p 3000:3000 nextjs-app
+        sleep 10
+        docker ps | grep nextjs_test
+        docker stop nextjs_test
+        docker rm nextjs_test

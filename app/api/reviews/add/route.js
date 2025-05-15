@@ -1,4 +1,4 @@
-import dbConnect from '../../../../lib/mongodb';
+import {dbConnect }from '../../../../lib/mongodb';
 import Review from '../../../../models/review';
 
 export default async function handler(req, res) {

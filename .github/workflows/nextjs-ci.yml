@@ -1,0 +1,45 @@
+name: Next.js CI with MongoDB service
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo:5.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+
+    env:
+      MONGODB_URI: mongodb://localhost:27017/mytestdb
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Wait for MongoDB to be ready
+      run: |
+        until nc -z localhost 27017; do
+          echo "Waiting for MongoDB..."
+          sleep 2
+        done
+
+    - name: Lint code
+      run: npm run lint
+
+    - name: Build Next.js app
+      run: npm run build

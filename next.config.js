@@ -11,7 +11,7 @@ const nextConfig = {
     domains: ['books.google.com']
   },
   env: {
-    Base_URL: process.env.Base_URL,
+    Base_URL: process.env.Base_URL || 'http://localhost:3000',
     // Other environment variables
   },
   

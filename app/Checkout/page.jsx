@@ -17,7 +17,7 @@ export default function Checkout() {
   const [payment, setPayment] = useState("Bank");
 
   const router = useRouter();
-  const { cartItems, removeFromCart, calculateTotalPrice } = useCart();
+  const { cartItems, calculateTotalPrice } = useCart();
   const [items, setItems] = useState({});
 
   const saveCartToDatabase = async (e) => {
@@ -25,7 +25,7 @@ export default function Checkout() {
 
     try {
       setItems(cartItems);
-      const total = calculateTotalPrice();
+      // const total = calculateTotalPrice();
       const res = await fetch("api/cart", {
         method: "POST",
         headers: {
@@ -38,7 +38,6 @@ export default function Checkout() {
           address,
           payment,
           items,
-          total: total,
         }),
       });
       if (res.ok) {
@@ -55,7 +54,7 @@ export default function Checkout() {
 
   const makePayment = async () => {
     setItems(cartItems);
-    const total = calculateTotalPrice();
+    // const total = calculateTotalPrice();
 
     const stripe = await stripePromise;
     const { id } = await fetch("/api/create-checkout-session", {

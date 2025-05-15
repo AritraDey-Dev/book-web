@@ -129,7 +129,7 @@ export default function UserInfo() {
       ["Payment ID", payment.razorpay_payment_id],
       ["Payment Order", payment.razorpay_order_id],
       ["Razorpay Signature", payment.razorpay_signature],
-      ["", ,],
+      ["",],
     ];
 
     pdf.autoTable(columns, rows, {
